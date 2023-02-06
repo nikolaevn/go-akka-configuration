@@ -138,6 +138,8 @@ func (p *Parser) ParseValue(owner *HoconValue, isEqualPlus bool, currentPath str
 	}
 
 	p.reader.PullWhitespaceAndComments()
+
+	// index reading added here
 	startIndex := p.reader.col
 	for p.reader.isValue() {
 		t := p.reader.PullValue()
@@ -182,7 +184,10 @@ func (p *Parser) ParseValue(owner *HoconValue, isEqualPlus bool, currentPath str
 			p.ParseTrailingWhitespace(owner)
 		}
 	}
+	//index ending
 	endIndex := p.reader.col
+
+	//populating position
 	owner.SetPosition(Position{
 		Line: p.reader.GetLine(),
 		Col:  startIndex,
