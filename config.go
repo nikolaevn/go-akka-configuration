@@ -92,7 +92,7 @@ func (p *Config) GetNode(path string) *hocon.HoconValue {
 	return currentNode
 }
 
-//capturing position of parsed node
+// capturing position of parsed node
 func (p *Config) GetPosition(path string) hocon.Position {
 	obj := p.GetNode(path)
 	if obj == nil {

@@ -2,6 +2,7 @@ package hocon
 
 import (
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -262,4 +263,34 @@ func splitDottedPathHonouringQuotes(path string) []string {
 		}
 	}
 	return values
+}
+
+// temp change
+func (p *Parser) GetKeyValuePairs() map[string]interface{} {
+	keyValues := make(map[string]interface{})
+	p.traverseHoconValueTree(p.root, "", keyValues)
+	return keyValues
+}
+
+func (p *Parser) traverseHoconValueTree(node *HoconValue, currentKey string, keyValues map[string]interface{}) {
+	if node.IsObject() {
+		object := node.GetObject()
+		for key := range object.items {
+			newKey := key
+			if len(currentKey) > 0 {
+				newKey = currentKey + "." + key
+			}
+			p.traverseHoconValueTree(object.items[key], newKey, keyValues)
+		}
+	} else if node.IsArray() {
+		array := node.GetArray()
+		for i, element := range array {
+			newKey := currentKey + "[" + strconv.Itoa(i) + "]"
+			p.traverseHoconValueTree(element, newKey, keyValues)
+		}
+	}
+
+	// } else if node.IsLiteral() {
+	// 	keyValues[currentKey] = node.GetObject().keys
+	// }
 }

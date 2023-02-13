@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+
+	"github.com/tera-insights/go-akka-configuration/hocon"
 )
 
 func TestParseKeyOrder(t *testing.T) {
