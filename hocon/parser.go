@@ -8,6 +8,12 @@ import (
 
 type IncludeCallback func(filename string) *HoconRoot
 
+type Position struct {
+	line int
+	col  int
+	len  int
+}
+
 type Parser struct {
 	reader   *HoconTokenizer
 	root     *HoconValue
@@ -266,28 +272,36 @@ func splitDottedPathHonouringQuotes(path string) []string {
 }
 
 // temp change
-func (p *Parser) GetKeyValuePairs() map[string]interface{} {
-	keyValues := make(map[string]interface{})
-	p.traverseHoconValueTree(p.root, "", keyValues)
-	return keyValues
+
+func (p *Parser) positionMap() map[string]Position {
+	positionMap := make(map[string]Position)
+
+	p.traverseHoconValueTree(p.root, "root", &positionMap)
+
+	return positionMap
 }
 
-func (p *Parser) traverseHoconValueTree(node *HoconValue, currentKey string, keyValues map[string]interface{}) {
+func (p *Parser) traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
+	(*posMap)[currentPath] = Position(*node.pos)
 	if node.IsObject() {
+		res := make(map[string]interface{})
 		object := node.GetObject()
 		for key := range object.items {
-			newKey := key
-			if len(currentKey) > 0 {
-				newKey = currentKey + "." + key
-			}
-			p.traverseHoconValueTree(object.items[key], newKey, keyValues)
+			newPath := currentPath + "." + key
+			val := p.traverseHoconValueTree(object.items[key], newPath, posMap)
+			res[key] = val
 		}
+		return res
 	} else if node.IsArray() {
 		array := node.GetArray()
+		res := make([]interface{}, len(array))
 		for i, element := range array {
-			newKey := currentKey + "[" + strconv.Itoa(i) + "]"
-			p.traverseHoconValueTree(element, newKey, keyValues)
+			newKey := currentPath + "[" + strconv.Itoa(i) + "]"
+			res[i] = p.traverseHoconValueTree(element, newKey, posMap)
 		}
+		return res
+	} else {
+		return nil // TODO: fix this and extract the value of the literal.
 	}
 
 	// } else if node.IsLiteral() {
