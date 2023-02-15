@@ -1,6 +1,7 @@
 package hocon
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -273,11 +274,17 @@ func splitDottedPathHonouringQuotes(path string) []string {
 
 // temp change
 
+//declaring constants
+const (
+	STRING  = "string"
+	NUMBER  = "number"
+	BOOLEAN = "boolean"
+	NULL    = "null"
+)
+
 func (p *Parser) positionMap() map[string]Position {
 	positionMap := make(map[string]Position)
-
 	p.traverseHoconValueTree(p.root, "root", &positionMap)
-
 	return positionMap
 }
 
@@ -301,10 +308,19 @@ func (p *Parser) traverseHoconValueTree(node *HoconValue, currentPath string, po
 		}
 		return res
 	} else {
-		return nil // TODO: fix this and extract the value of the literal.
-	}
+		// Extract the value of the literal based on its type
+		switch node.hoconType {
+		case STRING:
+			return node.GetString()
+		case NUMBER:
+			return node.GetInt32()
+		case BOOLEAN:
+			return node.GetBoolean()
+		case NULL:
+			return nil
+		default:
+			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))
+		}
 
-	// } else if node.IsLiteral() {
-	// 	keyValues[currentKey] = node.GetObject().keys
-	// }
+	}
 }
