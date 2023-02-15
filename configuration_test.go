@@ -5,8 +5,6 @@ import (
 	"runtime"
 	"sync"
 	"testing"
-
-	"github.com/tera-insights/go-akka-configuration/hocon"
 )
 
 func TestParseKeyOrder(t *testing.T) {
@@ -20,13 +18,13 @@ func TestParseKeyOrder(t *testing.T) {
 		}()
 
 		for i := 0; i < 100000; i++ {
-			conf := LoadConfig("tests/configs.conf")
+			conf, _ := LoadConfig("tests/configs.conf")
 			for g := 1; g < 3; g++ {
 				for i := 1; i < 4; i++ {
 					key := fmt.Sprintf("test.out.a.b.c.d.groups.g%d.o%d.order", g, i)
-					order := conf.GetInt32(key, -1)
+					order, err := ValueAt(conf, key)
 
-					if order != int32(i) {
+					if order != int32(i) || err != nil {
 						fmt.Println(conf)
 						t.Fatalf("order not match,group %d, except: %d, real order: %d", g, i, order)
 						return

@@ -274,7 +274,7 @@ func splitDottedPathHonouringQuotes(path string) []string {
 
 // temp change
 
-//declaring constants
+// declaring constants
 const (
 	STRING  = "string"
 	NUMBER  = "number"
@@ -282,20 +282,20 @@ const (
 	NULL    = "null"
 )
 
-func (p *Parser) positionMap() map[string]Position {
+func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 	positionMap := make(map[string]Position)
-	p.traverseHoconValueTree(p.root, "root", &positionMap)
-	return positionMap
+	res := traverseHoconValueTree(root.value, "root", &positionMap)
+	return res, &positionMap
 }
 
-func (p *Parser) traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
+func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
 	(*posMap)[currentPath] = Position(*node.pos)
 	if node.IsObject() {
 		res := make(map[string]interface{})
 		object := node.GetObject()
 		for key := range object.items {
 			newPath := currentPath + "." + key
-			val := p.traverseHoconValueTree(object.items[key], newPath, posMap)
+			val := traverseHoconValueTree(object.items[key], newPath, posMap)
 			res[key] = val
 		}
 		return res
@@ -304,7 +304,7 @@ func (p *Parser) traverseHoconValueTree(node *HoconValue, currentPath string, po
 		res := make([]interface{}, len(array))
 		for i, element := range array {
 			newKey := currentPath + "[" + strconv.Itoa(i) + "]"
-			res[i] = p.traverseHoconValueTree(element, newKey, posMap)
+			res[i] = traverseHoconValueTree(element, newKey, posMap)
 		}
 		return res
 	} else {
