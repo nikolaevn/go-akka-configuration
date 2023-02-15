@@ -9,7 +9,7 @@ import (
 
 type IncludeCallback func(filename string) *HoconRoot
 
-type Position struct {
+type Positions struct {
 	line int
 	col  int
 	len  int
@@ -321,6 +321,5 @@ func (p *Parser) traverseHoconValueTree(node *HoconValue, currentPath string, po
 		default:
 			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))
 		}
-
 	}
 }
