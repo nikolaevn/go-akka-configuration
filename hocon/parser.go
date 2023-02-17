@@ -15,6 +15,15 @@ type Positions struct {
 	len  int
 }
 
+// debug 3.1 - setting default values for pos
+func NewPositions() Positions {
+	return Positions{
+		line: -1,
+		col:  -1,
+		len:  -1,
+	}
+}
+
 type Parser struct {
 	reader   *HoconTokenizer
 	root     *HoconValue
@@ -295,6 +304,20 @@ func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 }
 
 func traverseHoconValueTree(node *HoconValue, currentPath string, posMap map[string]Position) interface{} {
+	// debug 1 - checking node is nil
+	if node == nil {
+		fmt.Println("debug 1 - node is nil")
+	}
+
+	// debug 2 - checking posMap is nil or keys to insert are already present
+	fmt.Printf("debug 2 - currentPath: %v, posMap: %v\n", currentPath, posMap)
+	if posMap == nil {
+		fmt.Println("posMap is nil")
+	}
+
+	// debug 3 - printing curr path and pos for each iterations
+	fmt.Printf("debug 3 - currentPath: %s, pos: %v\n", currentPath, node.pos)
+
 	posMap[currentPath] = Position(*node.pos)
 	if node.IsObject() {
 		res := make(map[string]interface{})

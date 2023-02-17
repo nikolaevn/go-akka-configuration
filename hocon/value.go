@@ -63,6 +63,15 @@ type Position struct {
 	Len  int
 }
 
+// part of debug 3.1
+func NewPosition() Position {
+	return Position{
+		Line: -1,
+		Col:  -1,
+		Len:  -1,
+	}
+}
+
 func (p *HoconValue) SetPosition(pos Position) {
 	p.pos = &Position{
 		Line: pos.Line,
