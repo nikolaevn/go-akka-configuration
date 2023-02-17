@@ -318,6 +318,11 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap map[str
 	// debug 3 - printing curr path and pos for each iterations
 	fmt.Printf("debug 3 - currentPath: %s, pos: %v\n", currentPath, node.pos)
 
+	// debug 4 - handling nil case before dereferinceing
+	if node.pos != nil {
+		posMap[currentPath] = Position(*node.pos)
+	}
+
 	posMap[currentPath] = Position(*node.pos)
 	if node.IsObject() {
 		res := make(map[string]interface{})
