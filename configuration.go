@@ -1,7 +1,11 @@
 package configuration
 
 import (
-	"io/ioutil"
+	"errors"
+	"os"
+	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/tera-insights/go-akka-configuration/hocon"
 )
@@ -11,19 +15,48 @@ import (
  */
 func ValueAt(obj interface{}, path string) (interface{}, error) {
 	// if the path is "", return this object as the result
+	if path == "" {
+		return obj, nil
+	}
 
 	// if the path is not nil
 	// split the path into "key" and "subPath" (based on the position of the first .)
+	keyEnd := strings.Index(path, ".")
+	var key, subPath string
+	if keyEnd == -1 {
+		key = path
+		subPath = ""
+	} else {
+		key = path[0:keyEnd]
+		subPath = path[keyEnd+1:]
+	}
 
 	// Analyze the type "obj" is of
+	switch reflect.TypeOf(obj).Kind() {
+	case reflect.Map:
+		// If object, recurse on ValueAt(obj[key], subPath)
+		m := obj.(map[string]interface{})
+		if val, ok := m[key]; ok {
+			return ValueAt(val, subPath)
+		}
+	case reflect.Slice:
+		// If array, recurse on ValueAt(obj[int(key)], subPath)
+		s := reflect.ValueOf(obj)
+		index, err := strconv.Atoi(key)
+		if err != nil {
+			return nil, errors.New("invalid array index")
+		}
+		if index >= s.Len() {
+			return nil, errors.New("array index out of bounds")
+		}
+		val := s.Index(index).Interface()
+		return ValueAt(val, subPath)
+	default:
+		// Otherwise return an error that you did not find an element on the path
+		return nil, errors.New("element not found")
+	}
 
-	// If object, recuse on ValueAt(obj[key], subPath)
-
-	// If array, recurse on ValueAt(obj[int(key)], subPath)
-
-	// Otherwise return an error that you did not find an element on the path
-
-	return obj, nil
+	return nil, errors.New("element not found")
 }
 
 func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interface{}, *map[string]hocon.Position) {
@@ -39,7 +72,7 @@ func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interfa
 }
 
 func LoadConfig(filename string) (interface{}, *map[string]hocon.Position) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +81,7 @@ func LoadConfig(filename string) (interface{}, *map[string]hocon.Position) {
 }
 
 func defaultIncludeCallback(filename string) *hocon.HoconRoot {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}

@@ -282,14 +282,20 @@ const (
 	NULL    = "null"
 )
 
+// func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
+// 	positionMap := make(map[string]Position)
+// 	res := traverseHoconValueTree(root.value, "root", &positionMap)
+// 	return res, &positionMap
+// }
+
 func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 	positionMap := make(map[string]Position)
-	res := traverseHoconValueTree(root.value, "root", &positionMap)
+	res := traverseHoconValueTree(root.value, "root", positionMap)
 	return res, &positionMap
 }
 
-func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
-	(*posMap)[currentPath] = Position(*node.pos)
+func traverseHoconValueTree(node *HoconValue, currentPath string, posMap map[string]Position) interface{} {
+	posMap[currentPath] = Position(*node.pos)
 	if node.IsObject() {
 		res := make(map[string]interface{})
 		object := node.GetObject()
