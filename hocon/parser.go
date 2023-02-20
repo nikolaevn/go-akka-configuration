@@ -311,11 +311,11 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 	// debug 2 - checking posMap is nil or keys to insert are already present
 	// fmt.Printf("debug 2 - currentPath: %v, posMap: %v\n", currentPath, posMap)
 	// if posMap == nil {
-	// 	fmt.Println("posMap is nil")
+	// 	fmt.Print("posMap is nil")
 	// }
 
 	// debug 3 - printing curr path and pos for each iterations
-	//fmt.Printf("debug 3 - currentPath: %s, pos: %v\n", currentPath, node.pos)
+	fmt.Printf("currentPath: %s, pos: %v\n", currentPath, node.pos)
 
 	//handling nil case before dereferinceing
 	if node.pos != nil {
