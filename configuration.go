@@ -32,6 +32,8 @@ func ValueAt(obj interface{}, path string) (interface{}, error) {
 		subPath = path[keyEnd+1:]
 	}
 
+	fmt.Printf("ValueAt: key=%s, subPath=%s\n", key, subPath)
+
 	// Analyze the type "obj" is of
 	switch reflect.TypeOf(obj).Kind() {
 	case reflect.Map:
@@ -56,9 +58,10 @@ func ValueAt(obj interface{}, path string) (interface{}, error) {
 		// Otherwise return an error that you did not find an element on the path
 		return nil, errors.New("element not found")
 	}
-
 	return nil, errors.New("element not found")
 }
+
+// eof valueat
 
 func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interface{}, *map[string]hocon.Position) {
 	var callback hocon.IncludeCallback

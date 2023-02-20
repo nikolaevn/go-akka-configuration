@@ -8,22 +8,6 @@ import (
 )
 
 type IncludeCallback func(filename string) *HoconRoot
-
-// type Positions struct {
-// 	line int
-// 	col  int
-// 	len  int
-// }
-
-// // debug 3.1 - setting default values for pos
-// func NewPositions() Positions {
-// 	return Positions{
-// 		line: -1,
-// 		col:  -1,
-// 		len:  -1,
-// 	}
-// }
-
 type Parser struct {
 	reader   *HoconTokenizer
 	root     *HoconValue
@@ -303,19 +287,6 @@ func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 }
 
 func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
-	// debug 1 - checking node is nil
-	// if node == nil {
-	// 	fmt.Println("debug 1 - node is nil")
-	// }
-
-	// debug 2 - checking posMap is nil or keys to insert are already present
-	// fmt.Printf("debug 2 - currentPath: %v, posMap: %v\n", currentPath, posMap)
-	// if posMap == nil {
-	// 	fmt.Print("posMap is nil")
-	// }
-
-	// debug 3 - printing curr path and pos for each iterations
-	fmt.Printf("currentPath: %s, pos: %v\n", currentPath, node.pos)
 
 	//handling nil case before dereferinceing
 	if node.pos != nil {
@@ -335,14 +306,12 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 		array := node.GetArray()
 		res := make([]interface{}, len(array))
 		for i, element := range array {
-			//fmt.Println("ping 1")
 			newKey := currentPath + "[" + strconv.Itoa(i) + "]"
 			res[i] = traverseHoconValueTree(element, newKey, posMap)
 		}
 		return res
 	} else {
 		// Extract the value of the literal based on its type
-		//fmt.Println(node.hoconType)
 		switch node.hoconType {
 		case STRING:
 			return node.GetString()
