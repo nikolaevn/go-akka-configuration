@@ -48,9 +48,9 @@ func TestParseKeyOrder(t *testing.T) {
 // 	config, _ := LoadConfig("tests/configs.conf")
 
 // 	testCases := []struct {
-// 		path         string
-// 		expected     interface{}
-// 		expectedErr  error
+// 		path        string
+// 		expected    interface{}
+// 		expectedErr error
 // 	}{
 // 		{
 // 			path:        "",

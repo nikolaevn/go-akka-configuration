@@ -9,20 +9,20 @@ import (
 
 type IncludeCallback func(filename string) *HoconRoot
 
-type Positions struct {
-	line int
-	col  int
-	len  int
-}
+// type Positions struct {
+// 	line int
+// 	col  int
+// 	len  int
+// }
 
-// debug 3.1 - setting default values for pos
-func NewPositions() Positions {
-	return Positions{
-		line: -1,
-		col:  -1,
-		len:  -1,
-	}
-}
+// // debug 3.1 - setting default values for pos
+// func NewPositions() Positions {
+// 	return Positions{
+// 		line: -1,
+// 		col:  -1,
+// 		len:  -1,
+// 	}
+// }
 
 type Parser struct {
 	reader   *HoconTokenizer
