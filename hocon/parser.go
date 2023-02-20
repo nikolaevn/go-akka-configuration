@@ -281,49 +281,47 @@ func splitDottedPathHonouringQuotes(path string) []string {
 	return values
 }
 
-// temp change
-
 // declaring constants
 const (
-	STRING  = "string"
-	NUMBER  = "number"
-	BOOLEAN = "boolean"
-	NULL    = "null"
+	STRING  = "String" //changed to camel case
+	NUMBER  = "Number"
+	BOOLEAN = "Boolean"
+	NULL    = "Null"
+	UNKNOWN = "Unknown"
 )
-
-// func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
-// 	positionMap := make(map[string]Position)
-// 	res := traverseHoconValueTree(root.value, "root", &positionMap)
-// 	return res, &positionMap
-// }
 
 func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 	positionMap := make(map[string]Position)
-	res := traverseHoconValueTree(root.value, "root", positionMap)
+
+	// // debug 4.2 - checking root node is nil
+	// if root == nil {
+	// 	fmt.Println("debug 4.2 - root node is nil")
+	// }
+
+	res := traverseHoconValueTree(root.value, "root", &positionMap)
 	return res, &positionMap
 }
 
-func traverseHoconValueTree(node *HoconValue, currentPath string, posMap map[string]Position) interface{} {
+func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
 	// debug 1 - checking node is nil
-	if node == nil {
-		fmt.Println("debug 1 - node is nil")
-	}
+	// if node == nil {
+	// 	fmt.Println("debug 1 - node is nil")
+	// }
 
 	// debug 2 - checking posMap is nil or keys to insert are already present
-	fmt.Printf("debug 2 - currentPath: %v, posMap: %v\n", currentPath, posMap)
-	if posMap == nil {
-		fmt.Println("posMap is nil")
-	}
+	// fmt.Printf("debug 2 - currentPath: %v, posMap: %v\n", currentPath, posMap)
+	// if posMap == nil {
+	// 	fmt.Println("posMap is nil")
+	// }
 
 	// debug 3 - printing curr path and pos for each iterations
-	fmt.Printf("debug 3 - currentPath: %s, pos: %v\n", currentPath, node.pos)
+	//fmt.Printf("debug 3 - currentPath: %s, pos: %v\n", currentPath, node.pos)
 
-	// debug 4 - handling nil case before dereferinceing
+	//handling nil case before dereferinceing
 	if node.pos != nil {
-		posMap[currentPath] = Position(*node.pos)
+		(*posMap)[currentPath] = Position(*node.pos)
 	}
 
-	posMap[currentPath] = Position(*node.pos)
 	if node.IsObject() {
 		res := make(map[string]interface{})
 		object := node.GetObject()
@@ -337,12 +335,14 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap map[str
 		array := node.GetArray()
 		res := make([]interface{}, len(array))
 		for i, element := range array {
+			//fmt.Println("ping 1")
 			newKey := currentPath + "[" + strconv.Itoa(i) + "]"
 			res[i] = traverseHoconValueTree(element, newKey, posMap)
 		}
 		return res
 	} else {
 		// Extract the value of the literal based on its type
+		//fmt.Println(node.hoconType)
 		switch node.hoconType {
 		case STRING:
 			return node.GetString()
@@ -351,6 +351,8 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap map[str
 		case BOOLEAN:
 			return node.GetBoolean()
 		case NULL:
+			return nil
+		case UNKNOWN: //added to fix unknown issue (temp)
 			return nil
 		default:
 			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))

@@ -14,11 +14,11 @@ type Config struct {
 	fallback      *Config
 }
 
-type Position struct {
-	line int
-	col  int
-	len  int
-}
+// type Position struct {
+// 	line int
+// 	col  int
+// 	len  int
+// }
 
 func NewConfigFromRoot(root *hocon.HoconRoot) *Config {
 	if root.Value() == nil {

@@ -70,7 +70,6 @@ func NewPosition() Position {
 		Col:  -1,
 		Len:  -1,
 	}
-	//fmt.Println("Position reset")
 }
 
 func (p *HoconValue) SetPosition(pos Position) {

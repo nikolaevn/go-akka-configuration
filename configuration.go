@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"reflect"
 	"strconv"
@@ -68,6 +69,10 @@ func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interfa
 	}
 	root := hocon.Parse(text, callback)
 
+	// Check if the node is nil
+	if root == nil {
+		fmt.Println("debug 6 - root is null here")
+	}
 	return hocon.TraverseTree(root)
 }
 
