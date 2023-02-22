@@ -78,13 +78,27 @@ func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interfa
 	return hocon.TraverseTree(root)
 }
 
+// func LoadConfig(filename string) (interface{}, *map[string]hocon.Position) {
+// 	data, err := os.ReadFile(filename)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	return ParseString(string(data), defaultIncludeCallback)
+// }
+
 func LoadConfig(filename string) (interface{}, *map[string]hocon.Position) {
+	fmt.Println("Loading config from", filename)
+
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
 
-	return ParseString(string(data), defaultIncludeCallback)
+	config, positionMap := ParseString(string(data), defaultIncludeCallback)
+
+	fmt.Println("Parsed config:", config)
+	return config, positionMap
 }
 
 func defaultIncludeCallback(filename string) *hocon.HoconRoot {
@@ -95,3 +109,5 @@ func defaultIncludeCallback(filename string) *hocon.HoconRoot {
 
 	return hocon.Parse(string(data), defaultIncludeCallback)
 }
+
+
