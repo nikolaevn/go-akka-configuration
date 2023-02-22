@@ -272,16 +272,11 @@ const (
 	BOOLEAN = "Boolean"
 	NULL    = "Null"
 	UNKNOWN = "Unknown"
+	INT     = "Integer"
 )
 
 func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 	positionMap := make(map[string]Position)
-
-	// // debug 4.2 - checking root node is nil
-	// if root == nil {
-	// 	fmt.Println("debug 4.2 - root node is nil")
-	// }
-
 	res := traverseHoconValueTree(root.value, "root", &positionMap)
 	return res, &positionMap
 }
@@ -312,17 +307,20 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 		return res
 	} else {
 		// Extract the value of the literal based on its type
+		fmt.Println(string(node.hoconType))
 		switch node.hoconType {
 		case STRING:
 			return node.GetString()
 		case NUMBER:
-			return node.GetInt32()
+			return node.GetInt64()
 		case BOOLEAN:
 			return node.GetBoolean()
 		case NULL:
 			return nil
 		case UNKNOWN: //added to fix unknown issue (temp)
 			return nil
+		case INT: // added case for INT
+			return node.GetInt32()
 		default:
 			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))
 		}

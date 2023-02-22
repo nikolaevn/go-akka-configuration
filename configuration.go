@@ -19,7 +19,6 @@ func ValueAt(obj interface{}, path string) (interface{}, error) {
 	if path == "" {
 		return obj, nil
 	}
-
 	// if the path is not nil
 	// split the path into "key" and "subPath" (based on the position of the first .)
 	keyEnd := strings.Index(path, ".")
@@ -32,7 +31,7 @@ func ValueAt(obj interface{}, path string) (interface{}, error) {
 		subPath = path[keyEnd+1:]
 	}
 
-	fmt.Printf("ValueAt: key=%s, subPath=%s\n", key, subPath)
+	//fmt.Printf("ValueAt: key=%s, subPath=%s\n", key, subPath)
 
 	// Analyze the type "obj" is of
 	switch reflect.TypeOf(obj).Kind() {
