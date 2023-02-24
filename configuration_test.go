@@ -2,6 +2,8 @@ package configuration
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"runtime"
 	"sync"
@@ -21,8 +23,6 @@ func TestValueAt(t *testing.T) {
 			for i := 1; i < 4; i++ {
 				key := fmt.Sprintf("root.test.o%d.order", i)
 				order, err := ValueAt(conf, key)
-				//fmt.Println("printing key value here : ", key, order, err)
-
 				if order != int32(i) || err != nil {
 					fmt.Println(conf)
 					t.Fatalf("order not match,group %d, except: %d, real order: %d", g, i, order)
@@ -99,3 +99,78 @@ func TestParseString(t *testing.T) {
 	}
 }
 
+func TestLoadConfig(t *testing.T) {
+	tmpfile, err := ioutil.TempFile("", "config_test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpfile.Name())
+
+	configText := "foo.bar.baz = 42"
+	if _, err := tmpfile.Write([]byte(configText)); err != nil {
+		t.Fatal(err)
+	}
+	config, _ := LoadConfig(tmpfile.Name())
+	expectedConfig := map[string]interface{}{
+		"foo": map[string]interface{}{
+			"bar": map[string]interface{}{
+				"baz": 42,
+			},
+		},
+	}
+	if !reflect.DeepEqual(config, expectedConfig) {
+		t.Errorf("LoadConfig(%q) = %#v, expected %#v", tmpfile.Name(), config, expectedConfig)
+	}
+}
+
+func TestTraverseTree(t *testing.T) {
+	hoconStr := "foo.bar.baz = 42\n" +
+		"list = [1,2,3]\n" +
+		"person {\n" +
+		"  name = \"Alice\"\n" +
+		"  age = 30\n" +
+		"  address {\n" +
+		"    city = \"New York\"\n" +
+		"    state = \"NY\"\n" +
+		"  }\n" +
+		"}"
+
+	root := hocon.Parse(hoconStr, defaultIncludeCallback)
+	result, posMap := hocon.TraverseTree(root)
+
+	expected := map[string]interface{}{
+		"foo": map[string]interface{}{
+			"bar": map[string]interface{}{
+				"baz": int64(42),
+			},
+		},
+		"list": []interface{}{int64(1), int64(2), int64(3)},
+		"person": map[string]interface{}{
+			"name": "Alice",
+			"age":  int64(30),
+			"address": map[string]interface{}{
+				"city":  "New York",
+				"state": "NY",
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("TraverseTree() = %v, expected %v", result, expected)
+	}
+
+	expectedPosMap := map[string]hocon.Position{
+		"root.foo.bar.baz":          {Line: 1, Col: 15, Len: 2},
+		"root.list[0]":              {Line: 2, Col: 6, Len: 1},
+		"root.list[1]":              {Line: 2, Col: 8, Len: 1},
+		"root.list[2]":              {Line: 2, Col: 10, Len: 1},
+		"root.person.name":          {Line: 4, Col: 4, Len: 1},
+		"root.person.age":           {Line: 5, Col: 4, Len: 1},
+		"root.person.address.city":  {Line: 6, Col: 4, Len: 1},
+		"root.person.address.state": {Line: 7, Col: 4, Len: 1},
+	}
+
+	if !reflect.DeepEqual(*posMap, expectedPosMap) {
+		t.Errorf("TraverseTree() position map = %v, expected %v", *posMap, expectedPosMap)
+	}
+}
