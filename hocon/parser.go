@@ -3,16 +3,17 @@ package hocon
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 type IncludeCallback func(filename string) *HoconRoot
 type Parser struct {
-	reader   *HoconTokenizer
-	root     *HoconValue
-	callback IncludeCallback
-
+	reader        *HoconTokenizer
+	root          *HoconValue
+	callback      IncludeCallback
 	substitutions []*HoconSubstitution
 }
 
@@ -322,4 +323,49 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))
 		}
 	}
+}
+
+func unwrapped(value interface{}) interface{} {
+	// If the value is nil, return nil
+	if value == nil {
+		return nil
+	}
+
+	// If the value is already unwrapped, return it as is
+	switch value.(type) {
+	case *HoconRoot, map[string]interface{}, []interface{}, string, int64, bool, float64:
+		return value
+	}
+
+	// If the value is a pointer, dereference it and call unwrapped recursively
+	if reflect.ValueOf(value).Kind() == reflect.Ptr {
+		return unwrapped(reflect.ValueOf(value).Elem().Interface())
+	}
+
+	// If the value is a struct, convert it to a map and call unwrapped recursively
+	if reflect.ValueOf(value).Kind() == reflect.Struct {
+		val := reflect.ValueOf(value)
+		m := make(map[string]interface{})
+		for i := 0; i < val.NumField(); i++ {
+			field := val.Type().Field(i).Name
+			if !unicode.IsUpper(rune(field[0])) {
+				continue
+			}
+			m[strings.ToLower(field)] = val.Field(i).Interface()
+		}
+		return unwrapped(m)
+	}
+
+	// If the value is a slice, convert it to a []interface{} and call unwrapped recursively on each element
+	if reflect.ValueOf(value).Kind() == reflect.Slice {
+		val := reflect.ValueOf(value)
+		slice := make([]interface{}, val.Len())
+		for i := 0; i < val.Len(); i++ {
+			slice[i] = unwrapped(val.Index(i).Interface())
+		}
+		return slice
+	}
+
+	// If we get here, the value is unsupported
+	panic(fmt.Sprintf("Unsupported type: %T", value))
 }

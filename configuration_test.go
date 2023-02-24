@@ -12,7 +12,7 @@ import (
 	"github.com/tera-insights/go-akka-configuration/hocon"
 )
 
-func TestValueAt(t *testing.T) {
+func TestValue(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	fn := func() {
 		defer func() {
@@ -39,7 +39,7 @@ func TestValueAt(t *testing.T) {
 	wg.Wait()
 }
 
-func Test2(t *testing.T) {
+func TestValueAt(t *testing.T) {
 	config, _ := LoadConfig("tests/test.conf")
 	expected := map[string]interface{}{
 		"server.port":       8080,
@@ -96,6 +96,22 @@ func TestParseString(t *testing.T) {
 	fmt.Println("result =", result)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("unexpected error: %v\n", result)
+	}
+}
+
+func TestParse(t *testing.T) {
+	text := "foo.bar.baz = 42"
+	expected := map[string]interface{}{
+		"foo": map[string]interface{}{
+			"bar": map[string]interface{}{
+				"baz": int64(42),
+			},
+		},
+	}
+	result := hocon.Parse(text, defaultIncludeCallback).Value().GetObject().Unwrapped()
+
+	if !reflect.DeepEqual(expected, result) {
+		t.Errorf("Parse() returned %+v, expected %+v", result, expected)
 	}
 }
 
