@@ -60,8 +60,6 @@ func ValueAt(obj interface{}, path string) (interface{}, error) {
 	return nil, errors.New("element not found")
 }
 
-// eof valueat
-
 func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interface{}, *map[string]hocon.Position) {
 	var callback hocon.IncludeCallback
 	if len(includeCallback) > 0 {
@@ -70,34 +68,21 @@ func ParseString(text string, includeCallback ...hocon.IncludeCallback) (interfa
 		callback = defaultIncludeCallback
 	}
 	root := hocon.Parse(text, callback)
-
-	// Check if the node is nil
 	if root == nil {
 		fmt.Println("debug 6 - root is null here")
 	}
 	return hocon.TraverseTree(root)
 }
 
-// func LoadConfig(filename string) (interface{}, *map[string]hocon.Position) {
-// 	data, err := os.ReadFile(filename)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	return ParseString(string(data), defaultIncludeCallback)
-// }
-
 func LoadConfig(filename string) (interface{}, *map[string]hocon.Position) {
-	fmt.Println("Loading config from", filename)
-
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		panic(err)
+		//panic(err)
+		fmt.Println("Error:", err)
+		return nil, nil
 	}
-
 	config, positionMap := ParseString(string(data), defaultIncludeCallback)
-
-	fmt.Println("Parsed config:", config)
+	//fmt.Println("Stage - config:", config)
 	return config, positionMap
 }
 
@@ -106,8 +91,5 @@ func defaultIncludeCallback(filename string) *hocon.HoconRoot {
 	if err != nil {
 		panic(err)
 	}
-
 	return hocon.Parse(string(data), defaultIncludeCallback)
 }
-
-

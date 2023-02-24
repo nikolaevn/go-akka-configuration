@@ -48,13 +48,13 @@ type HoconValue struct {
 type HoconType string
 
 const (
-	String  HoconType = "String"
-	Boolean           = "Boolean"
-	Int32             = "Int32"
-	Int64             = "Int64"
-	Double            = "Double"
-	Array             = "Array"
-	Unknown           = "Unknown"
+	String  = "String"
+	Boolean = "Boolean"
+	Int32   = "Int32"
+	Int64   = "Int64"
+	Double  = "Double"
+	Array   = "Array"
+	Unknown = "Unknown"
 )
 
 type Position struct {
@@ -92,32 +92,59 @@ func (p *HoconValue) SetType(hoconType HoconType) {
 	p.hoconType = hoconType
 }
 
+// func (p *HoconValue) GetType() HoconType {
+// 	if p.hoconType != Unknown {
+// 		return p.hoconType
+// 	}
+// 	val := strings.TrimSpace(p.GetString())
+// 	//fmt.Println("[4] ", val)
+// 	if _, err := strconv.Atoi(val); err == nil {
+// 		p.SetType(Int32)
+// 		return p.hoconType
+// 	} else if _, err := strconv.ParseInt(val, 10, 64); err == nil {
+// 		p.SetType(Int64)
+// 		return p.hoconType
+// 	} else if _, err := strconv.ParseFloat(val, 64); err == nil {
+// 		p.SetType(Double)
+// 		return p.hoconType
+// 	} else if strings.ToLower(val) == "true" || strings.ToLower(val) == "false" {
+// 		p.SetType(Boolean)
+// 		return p.hoconType
+// 	}
+// 	p.SetType(String)
+// 	return p.hoconType
+// }
+
 func (p *HoconValue) GetType() HoconType {
 	if p.hoconType != Unknown {
 		return p.hoconType
 	}
-	val := strings.ToLower(p.GetString())
+	val := strings.TrimSpace(p.GetString())
 	numberRegex := "^[+-]?([0-9]*[.])?[0-9]+$"
 	match, _ := regexp.MatchString(numberRegex, val)
 	if match {
 		_, err := strconv.ParseInt(val, 10, 32)
 		if err == nil {
 			p.SetType(Int32)
+			fmt.Println("Got this type = ", p.hoconType)
 			return p.GetType()
 		}
 		_, err = strconv.ParseInt(val, 10, 64)
 		if err == nil {
 			p.SetType(Int64)
+			fmt.Println("Got this type = ", p.hoconType)
 			return p.GetType()
 		}
 		_, err = strconv.ParseFloat(val, 64)
 		if err == nil {
 			p.SetType(Double)
+			fmt.Println("Got this type = ", p.hoconType)
 			return p.GetType()
 		}
 	}
 	if val == "true" || val == "false" || val == "on" || val == "off" || val == "yes" || val == "no" {
 		p.SetType(Boolean)
+		fmt.Println("Got this type = ", p.hoconType)
 		return p.GetType()
 	}
 	p.SetType(String)
@@ -135,6 +162,50 @@ func (p *HoconValue) IsEmpty() bool {
 		}
 	}
 	return false
+}
+
+// added function for testing
+func GetType(val string) HoconType {
+	val = strings.ToLower(val)
+	numberRegex := "^[+-]?([0-9]*[.])?[0-9]+$"
+	match, _ := regexp.MatchString(numberRegex, val)
+	if match {
+		_, err := strconv.ParseInt(val, 10, 32)
+		if err == nil {
+			return Int32
+		}
+		_, err = strconv.ParseInt(val, 10, 64)
+		if err == nil {
+			return Int64
+		}
+		_, err = strconv.ParseFloat(val, 64)
+		if err == nil {
+			return Double
+		}
+	}
+	if val == "true" || val == "false" || val == "on" || val == "off" || val == "yes" || val == "no" {
+		return Boolean
+	}
+	return String
+}
+
+const MaxArrayLen = 10
+
+func ArrayToString(a []interface{}) string {
+	var b strings.Builder
+	b.WriteByte('[')
+	for i, v := range a {
+		if i > 0 {
+			b.WriteString(", ")
+		}
+		b.WriteString(fmt.Sprintf("%v", v))
+		if i >= MaxArrayLen-1 {
+			b.WriteString(", ...")
+			break
+		}
+	}
+	b.WriteByte(']')
+	return b.String()
 }
 
 func (p *HoconValue) AtKey(key string) *HoconRoot {
@@ -362,12 +433,20 @@ func (p *HoconValue) GetInt64() int64 {
 	return val
 }
 
+// func (p *HoconValue) GetInt32() int32 {
+// 	val, err := strconv.ParseInt(p.GetString(), 10, 32)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	return int32(val)
+// }
+
 func (p *HoconValue) GetInt32() int32 {
-	val, err := strconv.ParseInt(p.GetString(), 10, 32)
-	if err != nil {
-		panic(err)
+	if p.hoconType == Int32 {
+		val, _ := strconv.ParseInt(p.GetString(), 10, 32)
+		return int32(val)
 	}
-	return int32(val)
+	return 0
 }
 
 func (p *HoconValue) GetByte() byte {

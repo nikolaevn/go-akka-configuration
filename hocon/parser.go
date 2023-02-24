@@ -281,8 +281,46 @@ func TraverseTree(root *HoconRoot) (interface{}, *map[string]Position) {
 	return res, &positionMap
 }
 
-func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
+// func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
+// 	// If the node has a position, add it to the position map using the current path
+// 	if node.pos != nil {
+// 		(*posMap)[currentPath] = Position(*node.pos)
+// 	}
+// 	// If the node is an object, iterate over its keys and traverse each value recursively
+// 	if node.IsObject() {
+// 		res := make(map[string]interface{})
+// 		object := node.GetObject()
+// 		for key := range object.items {
+// 			newPath := currentPath + "." + key
+// 			val := traverseHoconValueTree(object.items[key], newPath, posMap)
+// 			res[key] = val
+// 		}
+// 		return res
+// 	} else if node.IsArray() { // If the node is an array, iterate over its elements and traverse each one recursively
+// 		array := node.GetArray()
+// 		res := make([]interface{}, len(array))
+// 		for i, element := range array {
+// 			newKey := currentPath + "[" + strconv.Itoa(i) + "]"
+// 			res[i] = traverseHoconValueTree(element, newKey, posMap)
+// 		}
+// 		return res
+// 	} else { // If the node is a literal, extract its value based on its type
+// 		switch node.hoconType {
+// 		case STRING:
+// 			return node.GetString()
+// 		case NUMBER:
+// 			return node.GetInt64()
+// 		case BOOLEAN:
+// 			return node.GetBoolean()
+// 		case UNKNOWN: // Return nil for unknown nodes (temporary fix for the issue)
+// 			return nil
+// 		default: // Throw a panic for unexpected value types
+// 			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))
+// 		}
+// 	}
+// }
 
+func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[string]Position) interface{} {
 	//handling nil case before dereferinceing
 	if node.pos != nil {
 		(*posMap)[currentPath] = Position(*node.pos)
@@ -293,6 +331,7 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 		object := node.GetObject()
 		for key := range object.items {
 			newPath := currentPath + "." + key
+			//fmt.Printf("[1] %s: %v\n", newPath, object.items[key])
 			val := traverseHoconValueTree(object.items[key], newPath, posMap)
 			res[key] = val
 		}
@@ -302,12 +341,13 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 		res := make([]interface{}, len(array))
 		for i, element := range array {
 			newKey := currentPath + "[" + strconv.Itoa(i) + "]"
+			//fmt.Printf("[2] %s: %v\n", newKey, element.hoconType)
 			res[i] = traverseHoconValueTree(element, newKey, posMap)
 		}
 		return res
 	} else {
 		// Extract the value of the literal based on its type
-		fmt.Println(string(node.hoconType))
+		//fmt.Println("[3] hoconType- ", string(node.hoconType))
 		switch node.hoconType {
 		case STRING:
 			return node.GetString()
@@ -315,12 +355,8 @@ func traverseHoconValueTree(node *HoconValue, currentPath string, posMap *map[st
 			return node.GetInt64()
 		case BOOLEAN:
 			return node.GetBoolean()
-		case NULL:
-			return nil
 		case UNKNOWN: //added to fix unknown issue (temp)
 			return nil
-		case INTEGER: // added case for INT
-			return node.GetInt64()
 		default:
 			panic(fmt.Sprintf("Unexpected value type: %v", node.hoconType))
 		}
