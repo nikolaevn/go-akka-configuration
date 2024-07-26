@@ -73,26 +73,58 @@ func (p *Config) GetNode(path string) *hocon.HoconValue {
 		return nil
 	}
 
-	elements := splitDottedPathHonouringQuotes(path)
+	elements := strings.Split(path, "\"")
 	currentNode := p.root
 
 	if currentNode == nil {
 		panic("Current node should not be null")
 	}
 
-	for _, key := range elements {
-		currentNode = currentNode.GetChildObject(key)
-		if currentNode == nil {
-			if p.fallback != nil {
-				return p.fallback.GetNode(path)
-			}
-			return nil
+	for i := 0; i < len(elements); i++ {
+		if len(elements[i]) == 0 {
+			continue
 		}
+
+		elementKey := strings.Trim(elements[i], ".")
+		childObject := currentNode.GetChildObject(elementKey)
+		if childObject == nil {
+			childObject = getChildObjectByPath(currentNode, elementKey)
+			if childObject == nil {
+				return nil
+			}
+		}
+		currentNode = childObject
 	}
+
 	return currentNode
 }
 
-//capturing position of parsed node
+func getChildObjectByPath(currentNode *hocon.HoconValue, path string) *hocon.HoconValue {
+	if currentNode == nil {
+		return nil
+	}
+
+	if !strings.Contains(path, ".") {
+		return currentNode.GetChildObject(path)
+	}
+
+	rv := currentNode
+	keys := strings.Split(path, ".")
+	for i := 0; i < len(keys); i++ {
+		if len(keys[i]) == 0 {
+			continue
+		}
+
+		rv = rv.GetChildObject(keys[i])
+		if rv == nil {
+			return nil
+		}
+	}
+
+	return rv
+}
+
+// capturing position of parsed node
 func (p *Config) GetPosition(path string) hocon.Position {
 	obj := p.GetNode(path)
 	if obj == nil {
